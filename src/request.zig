@@ -77,7 +77,7 @@ pub const Request = struct {
         max_header_size: usize = 10*1024,
 
         // If the content length is larger than this throw an error
-        max_content_length: usize = 1000*1024*1024,
+        max_content_length: u64 = 1000*1024*1024,
 
         // Dump conents of the request buffer
         dump_buffer: bool = false,
@@ -413,7 +413,7 @@ pub const Request = struct {
         self.uri = buf[index..end];
     }
 
-    pub fn parseContentLength(self: *Request, max_size: usize) !void {
+    pub fn parseContentLength(self: *Request, max_size: u64) !void {
         const headers = &self.headers;
         // Read content length
         if (headers.getOptional("Content-Length")) |content_length| {

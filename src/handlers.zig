@@ -106,8 +106,8 @@ pub fn StaticFileHandler(comptime static_url: []const u8,
         const Self = @This();
         //handler: web.RequestHandler,
         file: ?std.fs.File = null,
-        start: usize = 0,
-        end: usize = 0,
+        start: u64 = 0,
+        end: u64 = 0,
         server_request: *web.ServerRequest,
 
         pub fn get(self: *Self, request: *web.Request,
@@ -162,7 +162,7 @@ pub fn StaticFileHandler(comptime static_url: []const u8,
             // TODO: cache control
 
             self.end = stat.size;
-            var size: usize = stat.size;
+            var size: u64 = stat.size;
 
             if (request.headers.getOptional("Range")) |range_header| {
                 // As per RFC 2616 14.16, if an invalid Range header is specified,
@@ -180,12 +180,12 @@ pub fn StaticFileHandler(comptime static_url: []const u8,
                         range_end = tokens.next().?; // First one never fails
                     } else {
                         const range_start = tokens.next().?; // First one never fails
-                        self.start = std.fmt.parseInt(usize, range_start, 10) catch 0;
+                        self.start = std.fmt.parseInt(u64, range_start, 10) catch 0;
                         range_end = tokens.next();
                     }
 
                     if (range_end) |value| {
-                        const end = std.fmt.parseInt(usize, value, 10) catch 0;
+                        const end = std.fmt.parseInt(u64, value, 10) catch 0;
                         if (end > self.start) {
                             // Clients sometimes blindly use a large range to limit their
                             // download size; cap the endpoint at the actual file size.
@@ -258,10 +258,10 @@ pub fn StaticFileHandler(comptime static_url: []const u8,
         }
 
         // Stream the file
-        pub fn stream(self: *Self, io: *web.IOStream) !usize {
+        pub fn stream(self: *Self, io: *web.IOStream) !u64 {
             std.debug.assert(self.end > self.start);
             const total_wrote = self.end - self.start;
-            var bytes_left: usize = total_wrote;
+            var bytes_left: u64 = total_wrote;
             if (self.file) |file| {
                 defer file.close();
 
